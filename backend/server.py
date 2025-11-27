@@ -129,19 +129,50 @@ async def handle_button_press(button):
                 current_player["position"] = new_position
                 print(f"Player {game_state['current_turn'] + 1} moved from {old_position} to {new_position}")
                 
+                # Broadcast position after dice movement
+                await broadcast_to_frontend({
+                    "type": "game_state",
+                    "state": game_state
+                })
+                
+                # Wait for animation to complete (200ms per square)
+                await asyncio.sleep(0.2 * game_state["dice_value"])
+                
                 # Check for ladder
                 if new_position in game_state["board"]["ladders"]:
                     final_position = game_state["board"]["ladders"][new_position]
+                    await asyncio.sleep(0.5)  # Pause before climbing
                     current_player["position"] = final_position
                     print(f"Ladder! Player climbed to {final_position}")
                     await send_to_esp32(1)  # Congratulations pattern
+                    
+                    # Broadcast ladder movement
+                    await broadcast_to_frontend({
+                        "type": "game_state",
+                        "state": game_state
+                    })
+                    
+                    # Wait for ladder animation
+                    ladder_distance = abs(final_position - new_position)
+                    await asyncio.sleep(0.15 * ladder_distance)
                 
                 # Check for snake
                 elif new_position in game_state["board"]["snakes"]:
                     final_position = game_state["board"]["snakes"][new_position]
+                    await asyncio.sleep(0.5)  # Pause before sliding
                     current_player["position"] = final_position
                     print(f"Snake! Player slid down to {final_position}")
                     await send_to_esp32(2)  # Warning pattern
+                    
+                    # Broadcast snake movement
+                    await broadcast_to_frontend({
+                        "type": "game_state",
+                        "state": game_state
+                    })
+                    
+                    # Wait for snake animation
+                    snake_distance = abs(new_position - final_position)
+                    await asyncio.sleep(0.15 * snake_distance)
                 
                 # Check for winner
                 if current_player["position"] >= 100:

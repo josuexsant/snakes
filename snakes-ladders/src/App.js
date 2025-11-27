@@ -225,6 +225,9 @@ function CustomizeScreen({ gameState, selectedColor, setSelectedColor, colors, o
 }
 
 function GameScreen({ gameState }) {
+  const [animatingPlayer, setAnimatingPlayer] = useState(null);
+  const [animationPositions, setAnimationPositions] = useState({});
+
   const board = [];
   
   // Create 10x10 board (100 cells)
@@ -243,6 +246,40 @@ function GameScreen({ gameState }) {
     }
   }
 
+  // Detect when a player moves and animate
+  useEffect(() => {
+    if (!gameState.players || gameState.players.length === 0) return;
+
+    gameState.players.forEach((player, idx) => {
+      const currentAnimPos = animationPositions[idx] ?? 0;
+      
+      if (player.position !== currentAnimPos) {
+        // Player needs to move
+        setAnimatingPlayer(idx);
+        animatePlayerMovement(idx, currentAnimPos, player.position);
+      }
+    });
+  }, [gameState.players]);
+
+  const animatePlayerMovement = (playerIdx, from, to) => {
+    let current = from;
+    const step = from < to ? 1 : -1;
+    
+    const interval = setInterval(() => {
+      current += step;
+      
+      setAnimationPositions(prev => ({
+        ...prev,
+        [playerIdx]: current
+      }));
+      
+      if (current === to) {
+        clearInterval(interval);
+        setAnimatingPlayer(null);
+      }
+    }, 200); // 200ms per square
+  };
+
   const getCellClass = (cellNumber) => {
     let classes = ['cell'];
     
@@ -257,7 +294,13 @@ function GameScreen({ gameState }) {
   };
 
   const getPlayersAtPosition = (position) => {
-    return gameState.players.filter(p => p.position === position);
+    return gameState.players
+      .map((player, idx) => ({
+        ...player,
+        idx,
+        displayPosition: animationPositions[idx] ?? player.position
+      }))
+      .filter(p => p.displayPosition === position);
   };
 
   return (
@@ -286,10 +329,24 @@ function GameScreen({ gameState }) {
                   {players.map((player) => (
                     <div
                       key={player.id}
-                      className="player-piece"
+                      className={`player-piece ${animatingPlayer === player.idx ? 'animating' : ''}`}
                       style={{ backgroundColor: player.color }}
                     />
                   ))}
+                </div>
+              )}
+              
+              {/* Show ladder indicator */}
+              {gameState.board.ladders[cellNumber] && (
+                <div className="ladder-indicator">
+                  ↑ {gameState.board.ladders[cellNumber]}
+                </div>
+              )}
+              
+              {/* Show snake indicator */}
+              {gameState.board.snakes[cellNumber] && (
+                <div className="snake-indicator">
+                  ↓ {gameState.board.snakes[cellNumber]}
                 </div>
               )}
             </div>
