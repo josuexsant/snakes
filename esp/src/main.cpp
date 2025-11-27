@@ -19,7 +19,7 @@ const char* WIFI_PASS = "42wNn4d7vg";
 
 const char* WS_HOST = "192.168.100.64";   // Python server IP
 const uint16_t WS_PORT = 8765;
-const char* WS_URL  = "/";               // root
+const char* WS_URL  = "/esp32";              // root
 // ▲▲▲
 
 // ----------- LED PATTERNS -----------------
