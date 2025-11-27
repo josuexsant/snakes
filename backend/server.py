@@ -10,14 +10,33 @@ connected_frontend = set()
 
 def generate_board():
     """Generate snakes and ladders positions"""
-    # Ladders (start: end)
+    # Ladders (start: end) - TODAS SUBEN
     ladders = {
-        3: 22, 5: 8, 11: 26, 20: 29, 17: 4, 19: 7, 21: 9, 27: 1
+        3: 22,   # Sube de 3 a 22
+        5: 8,    # Sube de 5 a 8
+        11: 26,  # Sube de 11 a 26
+        17: 47,  # Sube de 17 a 47
+        19: 37,  # Sube de 19 a 37
+        21: 42,  # Sube de 21 a 42
+        27: 84,  # Sube de 27 a 84
+        28: 50,  # Sube de 28 a 50
+        51: 67,  # Sube de 51 a 67
+        71: 91,  # Sube de 71 a 91
+        80: 99   # Sube de 80 a 99
     }
     
-    # Snakes (start: end)
+    # Snakes (start: end) - TODAS BAJAN
     snakes = {
-        16: 6, 47: 26, 49: 11, 56: 53, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78
+        16: 6,   # Baja de 16 a 6
+        47: 26,  # Baja de 47 a 26
+        49: 11,  # Baja de 49 a 11
+        56: 53,  # Baja de 56 a 53
+        62: 19,  # Baja de 62 a 19
+        64: 60,  # Baja de 64 a 60
+        87: 24,  # Baja de 87 a 24
+        93: 73,  # Baja de 93 a 73
+        95: 75,  # Baja de 95 a 75
+        98: 78   # Baja de 98 a 78
     }
     
     return {"ladders": ladders, "snakes": snakes}
@@ -167,7 +186,7 @@ async def handle_button_press(button):
                     final_position = game_state["board"]["ladders"][new_position]
                     await asyncio.sleep(0.5)
                     current_player["position"] = final_position
-                    print(f"Ladder! Player climbed to {final_position}")
+                    print(f"Ladder! Player climbed from {new_position} to {final_position}")
                     await send_to_esp32(1)  # Congratulations pattern
                     
                     await broadcast_to_frontend({
@@ -183,7 +202,7 @@ async def handle_button_press(button):
                     final_position = game_state["board"]["snakes"][new_position]
                     await asyncio.sleep(0.5)
                     current_player["position"] = final_position
-                    print(f"Snake! Player slid down to {final_position}")
+                    print(f"Snake! Player slid down from {new_position} to {final_position}")
                     await send_to_esp32(2)  # Warning pattern
                     
                     await broadcast_to_frontend({
