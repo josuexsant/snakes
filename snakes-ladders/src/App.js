@@ -84,13 +84,12 @@ function App() {
     }
   }, [gameState?.players?.length]);
 
-  // Handle color change with LEFT button from ESP32
+  // Sync with server's selected color
   useEffect(() => {
-    if (gameState?.screen === 'customize') {
-      // Color changes are triggered by ESP32 LEFT button
-      // We'll cycle colors locally and send on RIGHT button
+    if (gameState?.selected_color_index !== undefined) {
+      setSelectedColor(gameState.selected_color_index);
     }
-  }, [gameState?.screen]);
+  }, [gameState?.selected_color_index]);
 
   const handleColorSelect = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -141,23 +140,50 @@ function App() {
 function MainScreen({ gameState }) {
   return (
     <div className="main-screen">
-      <h1>🎲 Serpientes y Escaleras 🎲</h1>
-      <div className="player-selection">
-        <p>¿Cuántos jugadores?</p>
-        <div className="options">
-          {[2, 3, 4].map((num) => (
-            <div
-              key={num}
-              className={`option ${gameState.num_players === num ? 'selected' : ''}`}
-            >
-              {num} Jugadores
-            </div>
-          ))}
+      <div className="main-screen-content">
+        <h1 className="main-title">
+          <span className="title-emoji bounce">🎲</span>
+          <span className="title-text">Serpientes y Escaleras</span>
+          <span className="title-emoji bounce-delay">🎲</span>
+        </h1>
+        
+        <div className="game-icons">
+          <span className="icon-large ladder-icon">🪜</span>
+          <span className="icon-large snake-icon">🐍</span>
         </div>
-      </div>
-      <div className="instructions">
-        <p>⬅️ Botón Izquierdo: Navegar</p>
-        <p>➡️ Botón Derecho: Seleccionar</p>
+        
+        <div className="player-selection">
+          <p className="selection-question">¿Cuántos jugadores?</p>
+          <div className="options">
+            {[2, 3, 4].map((num) => (
+              <div
+                key={num}
+                className={`option ${gameState.num_players === num ? 'selected' : ''}`}
+              >
+                <div className="option-content">
+                  <span className="player-count">{num}</span>
+                  <span className="player-icon">
+                    {Array.from({ length: num }).map((_, i) => (
+                      <span key={i} className="mini-player">👤</span>
+                    ))}
+                  </span>
+                  <span className="player-text">Jugadores</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="instructions">
+          <div className="instruction-item">
+            <span className="instruction-icon left-icon">⬅️</span>
+            <span className="instruction-text">Navegar</span>
+          </div>
+          <div className="instruction-item">
+            <span className="instruction-icon right-icon">➡️</span>
+            <span className="instruction-text">Seleccionar</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -166,59 +192,82 @@ function MainScreen({ gameState }) {
 function CustomizeScreen({ gameState, selectedColor, setSelectedColor, colors, onSelectColor }) {
   const currentPlayer = gameState.current_player_setup + 1;
   
-  // Sync with server's selected color
-  useEffect(() => {
-    if (gameState.selected_color_index !== undefined) {
-      setSelectedColor(gameState.selected_color_index);
-    }
-  }, [gameState.selected_color_index, setSelectedColor]);
-
   return (
     <div className="customize-screen">
-      <h2>Jugador {currentPlayer}</h2>
-      <p>Selecciona tu color</p>
-      
-      {/* Show already selected players */}
-      {gameState.players.length > 0 && (
-        <div className="selected-players">
-          <p>Jugadores listos:</p>
-          <div className="players-list">
-            {gameState.players.map((player, idx) => (
-              <div 
-                key={idx} 
-                className="ready-player"
-                style={{ backgroundColor: player.color }}
+      <div className="customize-content">
+        <div className="customize-header">
+          <h2 className="customize-title">
+            <span className="player-badge">Jugador {currentPlayer}</span>
+          </h2>
+          <p className="customize-subtitle">Elige tu color favorito</p>
+        </div>
+
+        {/* Show already selected players */}
+        {gameState.players.length > 0 && (
+          <div className="selected-players">
+            <p className="selected-title">✅ Jugadores listos:</p>
+            <div className="players-list">
+              {gameState.players.map((player, idx) => (
+                <div 
+                  key={idx} 
+                  className="ready-player pulse"
+                  style={{ backgroundColor: player.color }}
+                >
+                  <span className="ready-player-number">{idx + 1}</span>
+                  <span className="ready-player-check">✓</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="color-selection-area">
+          <div className="color-display">
+            <div className="color-preview-container">
+              <div
+                className="color-preview pulse-glow"
+                style={{ backgroundColor: colors[selectedColor] }}
               >
-                {idx + 1}
+                <span className="preview-player-icon">👤</span>
               </div>
-            ))}
+              <div className="color-name">
+                {['Rojo', 'Verde', 'Azul', 'Amarillo', 'Magenta', 'Cyan', 'Naranja', 'Morado'][selectedColor]}
+              </div>
+            </div>
+          </div>
+          
+          <div className="color-options">
+            {colors.map((color, idx) => {
+              const isAlreadyTaken = gameState.players.some(p => p.color === color);
+              return (
+                <div
+                  key={idx}
+                  className={`color-option ${idx === selectedColor ? 'selected' : ''} ${isAlreadyTaken ? 'taken' : ''}`}
+                  style={{ backgroundColor: color }}
+                >
+                  {idx === selectedColor && !isAlreadyTaken && (
+                    <span className="selection-indicator">
+                      <span className="selection-ring"></span>
+                      <span className="selection-dot"></span>
+                    </span>
+                  )}
+                  {isAlreadyTaken && <span className="taken-mark">✓</span>}
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
-      
-      <div className="color-display">
-        <div
-          className="color-preview"
-          style={{ backgroundColor: colors[selectedColor] }}
-        />
-      </div>
-      <div className="color-options">
-        {colors.map((color, idx) => {
-          const isAlreadyTaken = gameState.players.some(p => p.color === color);
-          return (
-            <div
-              key={idx}
-              className={`color-option ${idx === selectedColor ? 'selected' : ''} ${isAlreadyTaken ? 'taken' : ''}`}
-              style={{ backgroundColor: color }}
-            >
-              {isAlreadyTaken && <span className="taken-mark">✓</span>}
-            </div>
-          );
-        })}
-      </div>
-      <div className="instructions">
-        <p>⬅️ Cambiar Color</p>
-        <p>➡️ Seleccionar</p>
+        
+        <div className="instructions customize-instructions">
+          <div className="instruction-item">
+            <span className="instruction-icon left-icon">⬅️</span>
+            <span className="instruction-text">Cambiar Color</span>
+          </div>
+          <div className="instruction-item">
+            <span className="instruction-icon right-icon">➡️</span>
+            <span className="instruction-text">Confirmar</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -235,10 +284,8 @@ function GameScreen({ gameState }) {
     for (let col = 0; col < 10; col++) {
       let cellNumber;
       if (row % 2 === 1) {
-        // Odd rows go right to left
         cellNumber = row * 10 + (10 - col);
       } else {
-        // Even rows go left to right
         cellNumber = row * 10 + col + 1;
       }
       
@@ -246,7 +293,6 @@ function GameScreen({ gameState }) {
     }
   }
 
-  // Detect when a player moves and animate
   useEffect(() => {
     if (!gameState.players || gameState.players.length === 0) return;
 
@@ -254,7 +300,6 @@ function GameScreen({ gameState }) {
       const currentAnimPos = animationPositions[idx] ?? 0;
       
       if (player.position !== currentAnimPos) {
-        // Player needs to move
         setAnimatingPlayer(idx);
         animatePlayerMovement(idx, currentAnimPos, player.position);
       }
@@ -277,7 +322,7 @@ function GameScreen({ gameState }) {
         clearInterval(interval);
         setAnimatingPlayer(null);
       }
-    }, 200); // 200ms per square
+    }, 200);
   };
 
   const getCellClass = (cellNumber) => {
@@ -306,7 +351,6 @@ function GameScreen({ gameState }) {
   return (
     <div className="game-screen">
       <div className="game-container">
-        {/* Left side - Dice */}
         <div className="dice-section">
           <div className="current-player-info">
             <h3>Turno</h3>
@@ -340,7 +384,6 @@ function GameScreen({ gameState }) {
             <p>➡️ Mover Ficha</p>
           </div>
 
-          {/* Players info */}
           <div className="players-info">
             <h4>Jugadores</h4>
             {gameState.players.map((player, idx) => (
@@ -362,7 +405,6 @@ function GameScreen({ gameState }) {
           </div>
         </div>
 
-        {/* Right side - Board */}
         <div className="board-section">
           <div className="board">
             {board.map((cellNumber) => {
@@ -374,7 +416,6 @@ function GameScreen({ gameState }) {
                 <div key={cellNumber} className={getCellClass(cellNumber)}>
                   <span className="cell-number">{cellNumber}</span>
                   
-                  {/* Ladder emoji */}
                   {hasLadder && (
                     <div className="cell-emoji ladder-emoji">
                       🪜
@@ -382,7 +423,6 @@ function GameScreen({ gameState }) {
                     </div>
                   )}
                   
-                  {/* Snake emoji */}
                   {hasSnake && (
                     <div className="cell-emoji snake-emoji">
                       🐍
@@ -428,8 +468,14 @@ function EndScreen({ gameState }) {
       <div className="end-options">
         <p>¿Jugar de nuevo?</p>
         <div className="instructions">
-          <p>⬅️ Sí</p>
-          <p>➡️ No (Menú Principal)</p>
+          <div className="instruction-item">
+            <span className="instruction-icon left-icon">⬅️</span>
+            <span className="instruction-text">Sí</span>
+          </div>
+          <div className="instruction-item">
+            <span className="instruction-icon right-icon">➡️</span>
+            <span className="instruction-text">No (Menú)</span>
+          </div>
         </div>
       </div>
     </div>
