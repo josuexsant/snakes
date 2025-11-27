@@ -62,12 +62,37 @@ async def send_to_esp32(pattern_number):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"{now} Sent to ESP32: {message}")
 
+async def send_led_feedback(button_side):
+    """Send signal to ESP32 to light up LED briefly"""
+    # Send a special command for LED feedback
+    # We'll use "4" for LEFT LED and "5" for RIGHT LED
+    if button_side == "left":
+        message = "4"
+    else:  # right
+        message = "5"
+    
+    if connected_esp32:
+        await asyncio.gather(
+            *[client.send(message) for client in connected_esp32],
+            return_exceptions=True
+        )
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"{now} LED feedback sent: {button_side}")
+
 async def handle_button_press(button):
     """Handle button press from ESP32"""
     global game_state
     
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"{now} Button pressed: {button}")
+    
+    # Encender LED correspondiente al botón presionado
+    if button == "0":
+        # LEFT button pressed - send signal to turn on LEFT LED
+        await send_led_feedback("left")
+    elif button == "1":
+        # RIGHT button pressed - send signal to turn on RIGHT LED
+        await send_led_feedback("right")
     
     if game_state["screen"] == "main":
         if button == "0":  # LEFT - Navigate options
@@ -93,7 +118,6 @@ async def handle_button_press(button):
             # Check if color is already taken
             if any(player["color"] == selected_color for player in game_state["players"]):
                 print(f"Color {selected_color} already taken!")
-                # Could add a pattern here to indicate error
             else:
                 # Add player with selected color
                 game_state["players"].append({
@@ -141,36 +165,32 @@ async def handle_button_press(button):
                 # Check for ladder
                 if new_position in game_state["board"]["ladders"]:
                     final_position = game_state["board"]["ladders"][new_position]
-                    await asyncio.sleep(0.5)  # Pause before climbing
+                    await asyncio.sleep(0.5)
                     current_player["position"] = final_position
                     print(f"Ladder! Player climbed to {final_position}")
                     await send_to_esp32(1)  # Congratulations pattern
                     
-                    # Broadcast ladder movement
                     await broadcast_to_frontend({
                         "type": "game_state",
                         "state": game_state
                     })
                     
-                    # Wait for ladder animation
                     ladder_distance = abs(final_position - new_position)
                     await asyncio.sleep(0.15 * ladder_distance)
                 
                 # Check for snake
                 elif new_position in game_state["board"]["snakes"]:
                     final_position = game_state["board"]["snakes"][new_position]
-                    await asyncio.sleep(0.5)  # Pause before sliding
+                    await asyncio.sleep(0.5)
                     current_player["position"] = final_position
                     print(f"Snake! Player slid down to {final_position}")
                     await send_to_esp32(2)  # Warning pattern
                     
-                    # Broadcast snake movement
                     await broadcast_to_frontend({
                         "type": "game_state",
                         "state": game_state
                     })
                     
-                    # Wait for snake animation
                     snake_distance = abs(new_position - final_position)
                     await asyncio.sleep(0.15 * snake_distance)
                 

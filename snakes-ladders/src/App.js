@@ -305,58 +305,109 @@ function GameScreen({ gameState }) {
 
   return (
     <div className="game-screen">
-      <div className="game-header">
-        <h2>Turno: Jugador {gameState.current_turn + 1}</h2>
-        <div 
-          className="current-player-indicator"
-          style={{ backgroundColor: gameState.players[gameState.current_turn].color }}
-        />
-        {gameState.dice_value > 0 && (
-          <div className="dice-display">
-            <div className="dice">🎲 {gameState.dice_value}</div>
-          </div>
-        )}
-      </div>
-      
-      <div className="board">
-        {board.map((cellNumber) => {
-          const players = getPlayersAtPosition(cellNumber);
-          return (
-            <div key={cellNumber} className={getCellClass(cellNumber)}>
-              <span className="cell-number">{cellNumber}</span>
-              {players.length > 0 && (
-                <div className="players-container">
-                  {players.map((player) => (
-                    <div
-                      key={player.id}
-                      className={`player-piece ${animatingPlayer === player.idx ? 'animating' : ''}`}
-                      style={{ backgroundColor: player.color }}
-                    />
-                  ))}
-                </div>
-              )}
-              
-              {/* Show ladder indicator */}
-              {gameState.board.ladders[cellNumber] && (
-                <div className="ladder-indicator">
-                  ↑ {gameState.board.ladders[cellNumber]}
-                </div>
-              )}
-              
-              {/* Show snake indicator */}
-              {gameState.board.snakes[cellNumber] && (
-                <div className="snake-indicator">
-                  ↓ {gameState.board.snakes[cellNumber]}
-                </div>
-              )}
+      <div className="game-container">
+        {/* Left side - Dice */}
+        <div className="dice-section">
+          <div className="current-player-info">
+            <h3>Turno</h3>
+            <div 
+              className="current-player-indicator-large"
+              style={{ backgroundColor: gameState.players[gameState.current_turn].color }}
+            >
+              {gameState.current_turn + 1}
             </div>
-          );
-        })}
-      </div>
+            <p className="player-name">Jugador {gameState.current_turn + 1}</p>
+          </div>
+          
+          {gameState.dice_value > 0 ? (
+            <div className="dice-display-large">
+              <div className="dice-large">
+                <span className="dice-emoji">🎲</span>
+                <span className="dice-number">{gameState.dice_value}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="dice-display-large">
+              <div className="dice-placeholder">
+                <span className="dice-emoji">🎲</span>
+                <p>Presiona ⬅️ para lanzar</p>
+              </div>
+            </div>
+          )}
 
-      <div className="game-instructions">
-        <p>⬅️ Tirar Dado</p>
-        <p>➡️ Mover Ficha</p>
+          <div className="game-instructions">
+            <p>⬅️ Tirar Dado</p>
+            <p>➡️ Mover Ficha</p>
+          </div>
+
+          {/* Players info */}
+          <div className="players-info">
+            <h4>Jugadores</h4>
+            {gameState.players.map((player, idx) => (
+              <div 
+                key={idx} 
+                className={`player-info-item ${idx === gameState.current_turn ? 'active' : ''}`}
+              >
+                <div 
+                  className="player-info-color"
+                  style={{ backgroundColor: player.color }}
+                >
+                  {idx + 1}
+                </div>
+                <span className="player-info-position">
+                  Casilla: {player.position}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right side - Board */}
+        <div className="board-section">
+          <div className="board">
+            {board.map((cellNumber) => {
+              const players = getPlayersAtPosition(cellNumber);
+              const hasLadder = gameState.board.ladders[cellNumber];
+              const hasSnake = gameState.board.snakes[cellNumber];
+              
+              return (
+                <div key={cellNumber} className={getCellClass(cellNumber)}>
+                  <span className="cell-number">{cellNumber}</span>
+                  
+                  {/* Ladder emoji */}
+                  {hasLadder && (
+                    <div className="cell-emoji ladder-emoji">
+                      🪜
+                      <span className="destination-number">→{hasLadder}</span>
+                    </div>
+                  )}
+                  
+                  {/* Snake emoji */}
+                  {hasSnake && (
+                    <div className="cell-emoji snake-emoji">
+                      🐍
+                      <span className="destination-number">→{hasSnake}</span>
+                    </div>
+                  )}
+                  
+                  {players.length > 0 && (
+                    <div className="players-container">
+                      {players.map((player) => (
+                        <div
+                          key={player.id}
+                          className={`player-piece-large ${animatingPlayer === player.idx ? 'animating' : ''}`}
+                          style={{ backgroundColor: player.color }}
+                        >
+                          <span className="player-number">{player.idx + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
