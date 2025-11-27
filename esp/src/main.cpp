@@ -70,14 +70,38 @@ void patternWinner() {
 // ---------- WEBSOCKET CALLBACK ------------
 
 void wsEvent(WStype_t type, uint8_t * payload, size_t length) {
-    if (type == WStype_DISCONNECTED) {
-        Serial.println("❌ WS disconnected");
-    }
-    else if (type == WStype_CONNECTED) {
-        Serial.println("✅ WS connected!");
-    }
-    else if (type == WStype_TEXT) {
-        Serial.printf("WS says: %s\n", payload);
+
+    switch (type) {
+
+        case WStype_DISCONNECTED:
+            Serial.println("❌ WS disconnected");
+            break;
+
+        case WStype_CONNECTED:
+            Serial.println("✅ WS connected!");
+            ws.sendTXT("hello-from-esp32");
+            break;
+
+        case WStype_TEXT: {
+            String msg = String((char*)payload);
+            Serial.println(msg);
+
+            // ---- Commands from server ----
+            if (msg == "1") {
+                patternCongratulations();
+            }
+            else if (msg == "2") {
+                patternWarning();
+            }
+            else if (msg == "3") {
+                patternWinner();
+            }
+
+            break;
+        }
+
+        default:
+            break;
     }
 }
 
