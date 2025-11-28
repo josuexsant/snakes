@@ -2,14 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const COLORS = [
-  '#FF0000', // Red
-  '#00FF00', // Green
-  '#0000FF', // Blue
-  '#FFFF00', // Yellow
-  '#FF00FF', // Magenta
-  '#00FFFF', // Cyan
-  '#FFA500', // Orange
-  '#800080', // Purple
+  '#FF0000', '#00FF00', '#0000FF', '#FFFF00',
+  '#FF00FF', '#00FFFF', '#FFA500', '#800080',
 ];
 
 function App() {
@@ -34,7 +28,6 @@ function App() {
   }, []);
 
   const connectWebSocket = () => {
-    // Cambia esta IP por la IP de tu servidor
     const websocket = new WebSocket('ws://192.168.100.64:8765');
     
     websocket.onopen = () => {
@@ -65,7 +58,6 @@ function App() {
       setWs(null);
       wsRef.current = null;
       
-      // Intenta reconectar después de 2 segundos
       reconnectTimeout.current = setTimeout(() => {
         console.log('Attempting to reconnect...');
         connectWebSocket();
@@ -73,18 +65,14 @@ function App() {
     };
   };
 
-  // Auto-select color when button RIGHT is pressed
   useEffect(() => {
     if (gameState?.screen === 'customize' && ws && ws.readyState === WebSocket.OPEN) {
-      // Check if a new player was added
       if (gameState.players.length === gameState.current_player_setup) {
-        // Player was just added, reset color selector
         setSelectedColor(0);
       }
     }
   }, [gameState?.players?.length]);
 
-  // Sync with server's selected color
   useEffect(() => {
     if (gameState?.selected_color_index !== undefined) {
       setSelectedColor(gameState.selected_color_index);
@@ -147,6 +135,8 @@ function MainScreen({ gameState }) {
           <span className="title-emoji bounce-delay">🎲</span>
         </h1>
         
+        <div className="game-subtitle">¡Versión Educativa!</div>
+        
         <div className="game-icons">
           <span className="icon-large ladder-icon">🪜</span>
           <span className="icon-large snake-icon">🐍</span>
@@ -202,7 +192,6 @@ function CustomizeScreen({ gameState, selectedColor, setSelectedColor, colors, o
           <p className="customize-subtitle">Elige tu color favorito</p>
         </div>
 
-        {/* Show already selected players */}
         {gameState.players.length > 0 && (
           <div className="selected-players">
             <p className="selected-title">✅ Jugadores listos:</p>
@@ -279,7 +268,6 @@ function GameScreen({ gameState }) {
 
   const board = [];
   
-  // Create 10x10 board (100 cells)
   for (let row = 9; row >= 0; row--) {
     for (let col = 0; col < 10; col++) {
       let cellNumber;
@@ -350,6 +338,8 @@ function GameScreen({ gameState }) {
 
   return (
     <div className="game-screen">
+      {gameState.question_active && <QuestionModal gameState={gameState} />}
+      
       <div className="game-container">
         <div className="dice-section">
           <div className="current-player-info">
@@ -446,6 +436,60 @@ function GameScreen({ gameState }) {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuestionModal({ gameState }) {
+  const question = gameState.current_question;
+  const selectedAnswer = gameState.selected_answer;
+  const questionType = gameState.question_type;
+  
+  return (
+    <div className="question-modal-overlay">
+      <div className="question-modal">
+        <div className="question-header">
+          {questionType === 'ladder' ? (
+            <>
+              <span className="question-icon">🪜</span>
+              <h2>¡Escalera! Responde correctamente para subir</h2>
+            </>
+          ) : (
+            <>
+              <span className="question-icon">🐍</span>
+              <h2>¡Serpiente! Responde correctamente para evitarla</h2>
+            </>
+          )}
+        </div>
+        
+        <div className="question-content">
+          <p className="question-text">{question.question}</p>
+          
+          <div className="question-options">
+            {question.options.map((option, idx) => (
+              <div
+                key={idx}
+                className={`question-option ${idx === selectedAnswer ? 'selected' : ''}`}
+              >
+                <span className="option-letter">{String.fromCharCode(65 + idx)}</span>
+                <span className="option-text">{option}</span>
+                {idx === selectedAnswer && <span className="option-indicator">◀</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="question-instructions">
+          <div className="instruction-item">
+            <span className="instruction-icon">⬅️</span>
+            <span className="instruction-text">Cambiar Respuesta</span>
+          </div>
+          <div className="instruction-item">
+            <span className="instruction-icon">➡️</span>
+            <span className="instruction-text">Confirmar</span>
           </div>
         </div>
       </div>

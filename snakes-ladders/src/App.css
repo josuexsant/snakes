@@ -39,7 +39,7 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* Main Screen - Mejorado */
+/* Main Screen */
 .main-screen {
   text-align: center;
   color: white;
@@ -81,7 +81,7 @@ body {
 
 .main-title {
   font-size: 3.5em;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
@@ -117,6 +117,20 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: bold;
+}
+
+.game-subtitle {
+  font-size: 1.5em;
+  color: #FFD700;
+  margin-bottom: 30px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .game-icons {
@@ -318,7 +332,7 @@ body {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Customize Screen - Mejorado */
+/* Customize Screen */
 .customize-screen {
   text-align: center;
   color: white;
@@ -419,15 +433,6 @@ body {
   border: 4px solid white;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   position: relative;
-}
-
-.pulse {
-  animation: pulse-ready 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-ready {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
 }
 
 .ready-player-number {
@@ -625,7 +630,177 @@ body {
   margin-top: 30px;
 }
 
-/* Game Screen - Layout mejorado */
+/* Question Modal */
+.question-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.question-modal {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 25px;
+  padding: 40px;
+  max-width: 700px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  animation: slideIn 0.4s ease-out;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.question-header {
+  text-align: center;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.question-icon {
+  font-size: 4em;
+  display: block;
+  margin-bottom: 15px;
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.question-header h2 {
+  font-size: 1.8em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.question-content {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.question-text {
+  font-size: 1.5em;
+  color: white;
+  margin-bottom: 30px;
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  line-height: 1.4;
+}
+
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.question-option {
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  color: white;
+}
+
+.question-option:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(5px);
+}
+
+.question-option.selected {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border-color: #FFD700;
+  color: #333;
+  transform: scale(1.05);
+  box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+  animation: optionPulse 1s ease-in-out infinite;
+}
+
+@keyframes optionPulse {
+  0%, 100% { box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 5px 30px rgba(255, 215, 0, 0.8); }
+}
+
+.option-letter {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.question-option.selected .option-letter {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.option-text {
+  flex: 1;
+  font-size: 1.2em;
+  text-align: left;
+}
+
+.option-indicator {
+  font-size: 1.5em;
+  animation: indicatorPulse 1s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-5px); }
+}
+
+.question-instructions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.question-instructions .instruction-item {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* Game Screen */
 .game-screen {
   color: white;
   width: 100%;
@@ -634,6 +809,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .game-container {
@@ -645,7 +821,6 @@ body {
   max-width: 1800px;
 }
 
-/* Dice Section - Left side */
 .dice-section {
   flex: 0 0 280px;
   display: flex;
@@ -687,7 +862,6 @@ body {
   margin-top: 8px;
 }
 
-/* Dice Display */
 .dice-display-large {
   background: rgba(0, 0, 0, 0.6);
   padding: 20px;
@@ -738,7 +912,6 @@ body {
   75% { transform: rotate(10deg) scale(1.1); }
 }
 
-/* Game Instructions */
 .game-instructions {
   background: rgba(0, 0, 0, 0.6);
   padding: 15px;
@@ -751,7 +924,6 @@ body {
   margin: 8px 0;
 }
 
-/* Players Info */
 .players-info {
   background: rgba(0, 0, 0, 0.6);
   padding: 15px;
@@ -800,7 +972,6 @@ body {
   font-size: 1em;
 }
 
-/* Board Section */
 .board-section {
   flex: 1;
   background: rgba(0, 0, 0, 0.6);
@@ -827,7 +998,6 @@ body {
   aspect-ratio: 1 / 1;
 }
 
-/* Cell styles */
 .cell {
   background: #f0f0f0;
   border: 2px solid #ddd;
@@ -868,7 +1038,6 @@ body {
   font-weight: bold;
 }
 
-/* Emoji indicators */
 .cell-emoji {
   font-size: 3em;
   position: relative;
@@ -907,7 +1076,6 @@ body {
   margin-top: 3px;
 }
 
-/* Player pieces */
 .players-container {
   display: flex;
   gap: 6px;
@@ -966,10 +1134,10 @@ body {
 .end-screen h1 {
   font-size: 3em;
   margin-bottom: 40px;
-  animation: pulse 1s infinite;
+  animation: pulse-end 1s infinite;
 }
 
-@keyframes pulse {
+@keyframes pulse-end {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
@@ -1077,6 +1245,18 @@ body {
   .color-option {
     width: 60px;
     height: 60px;
+  }
+  
+  .question-modal {
+    padding: 25px;
+  }
+  
+  .question-text {
+    font-size: 1.2em;
+  }
+  
+  .option-text {
+    font-size: 1em;
   }
   
   .game-screen {
